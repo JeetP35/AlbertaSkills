@@ -25,7 +25,7 @@ public class Backup extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        String driveMode = "RobotCentric";
+        String driveMode = "";
 
         flMotor = hardwareMap.get(DcMotor.class, "FLMotor");
         frMotor = hardwareMap.get(DcMotor.class, "FRMotor");
@@ -61,6 +61,8 @@ public class Backup extends LinearOpMode {
                 powers = robotCentricDrive(); //Robot Centric
             } else if (driveMode.equals("FieldOriented")) {
                 powers = fieldOriented(); //Field Oriented
+            } else if (driveMode.equals("TankDrive")) {
+                powers = tankDrive(); //Tank Drive
             } else {
                 powers = robotCentricDrive(); // default
             }
@@ -122,6 +124,15 @@ public class Backup extends LinearOpMode {
                 ((adjustedLeftY - adjustedLeftX - rightX) / max) * drivePower, //Front Right
                 ((adjustedLeftY - adjustedLeftX + rightX) / max) * drivePower, //Back Left
                 ((adjustedLeftY + adjustedLeftX - rightX) / max) * drivePower  //Back Right
+        };
+    }
+
+    public double[] tankDrive() {
+        double rightPower = -gamepad1.right_stick_y;
+        double leftPower = -gamepad1.left_stick_y;
+
+        return new double[]{
+                leftPower, rightPower, leftPower, rightPower
         };
     }
 }
