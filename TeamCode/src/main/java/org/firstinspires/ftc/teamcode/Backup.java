@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode;
+import org.firstinspires.ftc.teamcode.subsystems.*;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -23,9 +24,10 @@ public class Backup extends LinearOpMode {
     private DcMotor flMotor, frMotor, blMotor, brMotor;
     private IMU imu;
 
+    private String driveMode = "RobotCentric";
+
     @Override
     public void runOpMode() {
-        String driveMode = "";
 
         flMotor = hardwareMap.get(DcMotor.class, "FLMotor");
         frMotor = hardwareMap.get(DcMotor.class, "FRMotor");
@@ -46,20 +48,12 @@ public class Backup extends LinearOpMode {
         ));
         imu.initialize(parameters);
 
-        double [] powers;
+        double[] powers;
 
         waitForStart();
         
         while (opModeIsActive()) {
-//            // Toggle Drive Mode (using your rate limit) Gemini's suggestion
-//            if (gamepadRateLimit.hasExpired() && gamepad1.y) {
-//                driveMode = driveMode.equals("RobotCentric") ? "FieldOriented" : "RobotCentric";
-//                gamepadRateLimit.reset();
-//            }
-
-            if (driveMode.equals("RobotCentric")) {
-                powers = robotCentricDrive(); //Robot Centric
-            } else if (driveMode.equals("FieldOriented")) {
+            if (driveMode.equals("FieldOriented")) {
                 powers = fieldOriented(); //Field Oriented
             } else if (driveMode.equals("TankDrive")) {
                 powers = tankDrive(); //Tank Drive
@@ -75,9 +69,11 @@ public class Backup extends LinearOpMode {
             if (gamepadRateLimit.hasExpired() && gamepad1.a) {
                 imu.resetYaw();
                 gamepadRateLimit.reset();
+            } else if (gamepad1.a) {
+                imu.resetYaw();
             }
 
-            telemetry.addData("Mode", driveMode);
+            telemetry.addData("Active Mode", driveMode);
             telemetry.update();
         }
     }
