@@ -73,7 +73,7 @@ public class Backup extends LinearOpMode {
                 imu.resetYaw();
             }
 
-            telemetry.addData("Active Mode", driveMode);
+            telemetry.addData("Active Drive Mode: ", driveMode);
             telemetry.update();
         }
     }
@@ -101,9 +101,9 @@ public class Backup extends LinearOpMode {
         };
     }
 
-    public double[] fieldOriented(){
-        double leftX = gamepad1.left_stick_x;
+    public double[] fieldOriented() {
         double leftY = -gamepad1.left_stick_y;
+        double leftX = gamepad1.left_stick_x;
         double rightX = gamepad1.right_stick_x;
 
         double max = Math.max(Math.abs(leftX) + Math.abs(leftY) + Math.abs(rightX), 1);
@@ -115,7 +115,7 @@ public class Backup extends LinearOpMode {
 
         double drivePower = 0.8 - (0.6 * gamepad1.right_trigger);
 
-        return new double[]{
+        return new double[] {
                 ((adjustedLeftY + adjustedLeftX + rightX) / max) * drivePower, //Front Left
                 ((adjustedLeftY - adjustedLeftX - rightX) / max) * drivePower, //Front Right
                 ((adjustedLeftY - adjustedLeftX + rightX) / max) * drivePower, //Back Left
