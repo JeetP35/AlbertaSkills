@@ -11,7 +11,6 @@ public class Drive {
     private DcMotor blMotor;
     private DcMotor brMotor;
 
-
     public double ForwardBack;
     public double LeftRight;
     public double Rotate;
