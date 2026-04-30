@@ -15,7 +15,9 @@ import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 
 @TeleOp
@@ -23,6 +25,9 @@ public class Backup extends LinearOpMode {
 
     private DcMotor flMotor, frMotor, blMotor, brMotor;
     private IMU imu;
+
+    private CRServo wristLeft, wristRight;
+    private Servo claw;
 
     private String driveMode = "RobotCentric";
 
@@ -48,10 +53,15 @@ public class Backup extends LinearOpMode {
         ));
         imu.initialize(parameters);
 
+        wristLeft = hardwareMap.get(CRServo.class, "wristLeft");
+        wristRight = hardwareMap.get(CRServo.class, "wristRight");
+
+        claw = hardwareMap.get(Servo.class, "claw");
+
         double[] powers;
 
         waitForStart();
-        
+
         while (opModeIsActive()) {
             if (driveMode.equals("FieldOriented")) {
                 powers = fieldOriented(); //Field Oriented
@@ -61,10 +71,22 @@ public class Backup extends LinearOpMode {
                 powers = robotCentricDrive(); // default
             }
 
+            double wristRightPower = gamepad1.right_trigger;
+            double wristLeftPower = gamepad1.left_trigger;
+
             flMotor.setPower(powers[0]);
             frMotor.setPower(powers[1]);
             blMotor.setPower(powers[2]);
             brMotor.setPower(powers[3]);
+
+            wristRight.setPower(wristRightPower);
+            wristLeft.setPower(wristLeftPower);
+
+            if (gamepad1.a) {
+                claw.setPosition(1.00);
+            } else if (gamepad1.b) {
+                claw.setPosition(-1.00);
+            }
 
             if (gamepadRateLimit.hasExpired() && gamepad1.a) {
                 imu.resetYaw();
@@ -74,6 +96,8 @@ public class Backup extends LinearOpMode {
             }
 
             telemetry.addData("Active Drive Mode: ", driveMode);
+            telemetry.addData("WristR Power: ", wristRight.getPower());
+            telemetry.addData("WristL Power: ", wristLeft.getPower());
             telemetry.update();
         }
     }
@@ -93,7 +117,7 @@ public class Backup extends LinearOpMode {
 
         double max = Math.max(Math.abs(ForwardBack) + Math.abs(LeftRight) + Math.abs(Rotate), 1.0);
 
-        return new double[]{
+        return new double[] {
                 Range.clip((ForwardBack + LeftRight + Rotate) / max, -1.0, 1.0) * SpeedMultiplier,
                 Range.clip((ForwardBack - LeftRight - Rotate) / max, -1.0, 1.0) * SpeedMultiplier,
                 Range.clip((ForwardBack - LeftRight + Rotate) / max, -1.0, 1.0) * SpeedMultiplier,
@@ -127,7 +151,7 @@ public class Backup extends LinearOpMode {
         double rightPower = -gamepad1.right_stick_y;
         double leftPower = -gamepad1.left_stick_y;
 
-        return new double[]{
+        return new double[] {
                 leftPower, rightPower, leftPower, rightPower
         };
     }
