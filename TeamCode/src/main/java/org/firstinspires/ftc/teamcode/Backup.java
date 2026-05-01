@@ -26,18 +26,17 @@ public class Backup extends LinearOpMode {
     private DcMotor flMotor, frMotor, blMotor, brMotor;
     private IMU imu;
 
-    private CRServo wristLeft, wristRight;
-    private Servo claw;
-
-    private String driveMode = "RobotCentric";
+//    private CRServo wristLeft, wristRight;
+//    private Servo claw;
+//
+//    private DcMotor armMotor;
 
     @Override
     public void runOpMode() {
-
-        flMotor = hardwareMap.get(DcMotor.class, "FLMotor");
-        frMotor = hardwareMap.get(DcMotor.class, "FRMotor");
-        blMotor = hardwareMap.get(DcMotor.class, "BLMotor");
-        brMotor = hardwareMap.get(DcMotor.class, "BRMotor");
+        flMotor = hardwareMap.get(DcMotor.class, "FrontLeft");
+        frMotor = hardwareMap.get(DcMotor.class, "FrontRight");
+        blMotor = hardwareMap.get(DcMotor.class, "BackLeft");
+        brMotor = hardwareMap.get(DcMotor.class, "BackRight");
 
         flMotor.setDirection(DcMotor.Direction.REVERSE);
         blMotor.setDirection(DcMotor.Direction.REVERSE);
@@ -53,23 +52,20 @@ public class Backup extends LinearOpMode {
         ));
         imu.initialize(parameters);
 
-        wristLeft = hardwareMap.get(CRServo.class, "wristLeft");
-        wristRight = hardwareMap.get(CRServo.class, "wristRight");
-
-        claw = hardwareMap.get(Servo.class, "claw");
+//        wristLeft = hardwareMap.get(CRServo.class, "wristLeft");
+//        wristRight = hardwareMap.get(CRServo.class, "wristRight");
+//
+//        claw = hardwareMap.get(Servo.class, "claw");
+//
+//        armMotor = (DcMotor) hardwareMap.get(Servo.class, "arm");
 
         double[] powers;
 
         waitForStart();
 
         while (opModeIsActive()) {
-            if (driveMode.equals("FieldOriented")) {
-                powers = fieldOriented(); //Field Oriented
-            } else if (driveMode.equals("TankDrive")) {
-                powers = tankDrive(); //Tank Drive
-            } else {
-                powers = robotCentricDrive(); // default
-            }
+            String driveMode = "RobotCentric";
+            powers = robotCentricDrive(); // default
 
             double wristRightPower = gamepad1.right_trigger;
             double wristLeftPower = gamepad1.left_trigger;
@@ -79,14 +75,14 @@ public class Backup extends LinearOpMode {
             blMotor.setPower(powers[2]);
             brMotor.setPower(powers[3]);
 
-            wristRight.setPower(wristRightPower);
-            wristLeft.setPower(wristLeftPower);
+//            wristRight.setPower(wristRightPower);
+//            wristLeft.setPower(wristLeftPower);
 
-            if (gamepad1.a) {
-                claw.setPosition(1.00);
-            } else if (gamepad1.b) {
-                claw.setPosition(-1.00);
-            }
+//            if (gamepad1.a) {
+//                claw.setPosition(1.00);
+//            } else if (gamepad1.b) {
+//                claw.setPosition(-1.00);
+//            }
 
             if (gamepadRateLimit.hasExpired() && gamepad1.a) {
                 imu.resetYaw();
@@ -96,8 +92,8 @@ public class Backup extends LinearOpMode {
             }
 
             telemetry.addData("Active Drive Mode: ", driveMode);
-            telemetry.addData("WristR Power: ", wristRight.getPower());
-            telemetry.addData("WristL Power: ", wristLeft.getPower());
+//            telemetry.addData("WristR Power: ", wristRight.getPower());
+//            telemetry.addData("WristL Power: ", wristLeft.getPower());
             telemetry.update();
         }
     }

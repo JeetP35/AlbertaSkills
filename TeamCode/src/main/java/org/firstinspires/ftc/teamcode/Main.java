@@ -35,10 +35,10 @@ public class Main extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        flMotor = hardwareMap.get(DcMotor.class, "FLMotor");
-        frMotor = hardwareMap.get(DcMotor.class, "FRMotor");
-        blMotor = hardwareMap.get(DcMotor.class, "BLMotor");
-        brMotor = hardwareMap.get(DcMotor.class, "BRMotor");
+        flMotor = hardwareMap.get(DcMotor.class, "FrontLeft");
+        frMotor = hardwareMap.get(DcMotor.class, "FrontRight");
+        blMotor = hardwareMap.get(DcMotor.class, "BackLeft");
+        brMotor = hardwareMap.get(DcMotor.class, "BackRight");
 
         flMotor.setDirection(DcMotor.Direction.REVERSE);
         blMotor.setDirection(DcMotor.Direction.REVERSE);
