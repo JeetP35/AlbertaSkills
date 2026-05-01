@@ -65,7 +65,7 @@ public class Backup extends LinearOpMode {
 
         while (opModeIsActive()) {
             String driveMode = "RobotCentric";
-            powers = robotCentricDrive(); // default
+            powers = fieldOriented(); // default
 
             double wristRightPower = gamepad1.right_trigger;
             double wristLeftPower = gamepad1.left_trigger;
