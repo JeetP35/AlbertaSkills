@@ -1,5 +1,4 @@
 package org.firstinspires.ftc.teamcode;
-import org.firstinspires.ftc.teamcode.subsystems.*;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -11,25 +10,20 @@ import java.util.concurrent.TimeUnit;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.IMU;
 
-import com.qualcomm.robotcore.robot.Robot;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 
 @TeleOp
-public class Backup extends LinearOpMode {
+public class BigRockBackup extends LinearOpMode {
 
     private DcMotor flMotor, frMotor, blMotor, brMotor;
     private IMU imu;
 
 //    private CRServo wristLeft, wristRight;
 //    private Servo claw;
-//
-//    private DcMotor armMotor;
+
+    private DcMotor armMotor;
+    private DcMotor armRotation;
 
     @Override
     public void runOpMode() {
@@ -56,8 +50,21 @@ public class Backup extends LinearOpMode {
 //        wristRight = hardwareMap.get(CRServo.class, "wristRight");
 //
 //        claw = hardwareMap.get(Servo.class, "claw");
-//
-//        armMotor = (DcMotor) hardwareMap.get(Servo.class, "arm");
+
+        armMotor = hardwareMap.get(DcMotor.class, "ArmMotor");
+        armRotation = hardwareMap.get(DcMotor.class, "ArmRotation");
+
+        armMotor.setTargetPosition(0);
+        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        //ExtendPosition
+        armRotation.setTargetPosition(0);
+        armRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armRotation.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
 
         double[] powers;
 
@@ -65,18 +72,59 @@ public class Backup extends LinearOpMode {
 
         while (opModeIsActive()) {
             String driveMode = "RobotCentric";
-            powers = fieldOriented(); // default
+            powers = robotCentricDrive(); // default
 
             double wristRightPower = gamepad1.right_trigger;
             double wristLeftPower = gamepad1.left_trigger;
 
-            flMotor.setPower(powers[0]);
-            frMotor.setPower(powers[1]);
+            double rotations=312;
+            double gear=5;
+            double countsRev=rotations*gear;
+            double degree=countsRev/360;
+
+            boolean armUp = gamepad1.dpad_up;
+            boolean armDown = gamepad1.dpad_down;
+            int armPosition = armMotor.getCurrentPosition();
+            double armMaxLimit = 0;
+            double armMinLimit = 0;
+
+            boolean armRight = gamepad1.dpad_right;
+            boolean armLeft = gamepad1.dpad_left;
+            int armRotationPosition = armRotation.getCurrentPosition();
+
+            flMotor.setPower(-powers[0]);
+            frMotor.setPower(-powers[1]);
             blMotor.setPower(powers[2]);
             brMotor.setPower(powers[3]);
 
 //            wristRight.setPower(wristRightPower);
 //            wristLeft.setPower(wristLeftPower);
+
+            if (armUp) {
+                armMotor.setPower(0.40);
+                armMotor.setTargetPosition(armPosition + (int) (degree * 90));
+            }
+            else if (armDown) {
+                armMotor.setPower(0.40);
+                armMotor.setTargetPosition(armPosition - (int) (degree * 90));
+            }
+            else {
+                armMotor.setPower(1.00);
+                armMotor.setTargetPosition(armPosition);
+            }
+
+            if (armRight) {
+                armRotation.setPower(0.40);
+                armRotation.setTargetPosition(armRotationPosition + (int) (degree * 90));
+            }
+            else if (armLeft) {
+                armRotation.setPower(0.40);
+                armRotation.setTargetPosition(armRotationPosition - (int) (degree * 90));
+            }
+            else {
+                armRotation.setPower(1.00);
+                armRotation.setTargetPosition(armRotationPosition);
+            }
 
 //            if (gamepad1.a) {
 //                claw.setPosition(1.00);
@@ -114,10 +162,10 @@ public class Backup extends LinearOpMode {
         double max = Math.max(Math.abs(ForwardBack) + Math.abs(LeftRight) + Math.abs(Rotate), 1.0);
 
         return new double[] {
-                Range.clip((ForwardBack + LeftRight + Rotate) / max, -1.0, 1.0) * SpeedMultiplier,
-                Range.clip((ForwardBack - LeftRight - Rotate) / max, -1.0, 1.0) * SpeedMultiplier,
-                Range.clip((ForwardBack - LeftRight + Rotate) / max, -1.0, 1.0) * SpeedMultiplier,
-                Range.clip((ForwardBack + LeftRight - Rotate) / max, -1.0, 1.0) * SpeedMultiplier
+                Range.clip((ForwardBack + LeftRight + Rotate) * SpeedMultiplier, -1.0, 1.0), //Fl
+                Range.clip((ForwardBack - LeftRight - Rotate) * SpeedMultiplier, -1.0, 1.0), //FR
+                Range.clip((ForwardBack - LeftRight + Rotate) * SpeedMultiplier, -1.0, 1.0), //BL
+                Range.clip((ForwardBack + LeftRight - Rotate) * SpeedMultiplier, -1.0, 1.0)  //BR
         };
     }
 
