@@ -10,8 +10,9 @@ import java.util.concurrent.TimeUnit;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
-
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.Range;
 
 @TeleOp
@@ -20,8 +21,9 @@ public class SvenBackup extends LinearOpMode {
     private DcMotor flMotor, frMotor, blMotor, brMotor;
     private IMU imu;
 
-//    private CRServo wristLeft, wristRight;
-//    private Servo claw;
+    private DcMotor armMotor;
+    private Servo clawOC;
+    private Servo clawUD;
 
     @Override
     public void runOpMode() {
@@ -44,10 +46,15 @@ public class SvenBackup extends LinearOpMode {
         ));
         imu.initialize(parameters);
 
-//        wristLeft = hardwareMap.get(CRServo.class, "wristLeft");
-//        wristRight = hardwareMap.get(CRServo.class, "wristRight");
-//
-//        claw = hardwareMap.get(Servo.class, "claw");
+        armMotor = hardwareMap.get(DcMotor.class, "armMotor");
+
+        clawOC = hardwareMap.get(Servo.class, "clawOC");
+        clawUD = hardwareMap.get(Servo.class, "clawUD");
+
+        armMotor.setTargetPosition(0);
+        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         double[] powers;
 
@@ -57,23 +64,49 @@ public class SvenBackup extends LinearOpMode {
             String driveMode = "RobotCentric";
             powers = robotCentricDrive(); // default
 
-            double wristRightPower = gamepad1.right_trigger;
-            double wristLeftPower = gamepad1.left_trigger;
+            double rotations=312;
+            double gear=5;
+            double countsRev=rotations*gear;
+            double degree=countsRev/360;
+
+            boolean armUp = gamepad1.dpad_up;
+            boolean armDown = gamepad1.dpad_down;
+            int armPosition = armMotor.getCurrentPosition();
+            double armMaxLimit = 0;
+            double armMinLimit = 0;
+
+            boolean armRight = gamepad1.dpad_right;
+            boolean armLeft = gamepad1.dpad_left;
 
             flMotor.setPower(powers[0]);
             frMotor.setPower(powers[1]);
             blMotor.setPower(-powers[2]);
             brMotor.setPower(-powers[3]);
 
+            if (armUp) {
+                armMotor.setPower(0.40);
+                armMotor.setTargetPosition(armPosition - (int) (degree * 90));
+            }
+            else if (armDown) {
+                armMotor.setPower(0.40);
+                armMotor.setTargetPosition(armPosition + (int) (degree * 90));
+            }
+            else {
+                armMotor.setPower(1.00);
+                armMotor.setTargetPosition(armPosition);
+            }
 
-//            wristRight.setPower(wristRightPower);
-//            wristLeft.setPower(wristLeftPower);
+            if (gamepad1.dpad_right) {
+                clawOC.setPosition(1);
+            } else if (gamepad1.dpad_left) {
+                clawOC.setPosition(-1);
+            }
 
-//            if (gamepad1.a) {
-//                claw.setPosition(1.00);
-//            } else if (gamepad1.b) {
-//                claw.setPosition(-1.00);
-//            }
+            if (gamepad1.right_bumper) {
+                clawOC.setPosition(1.00);
+            } else if (gamepad1.left_bumper) {
+                clawOC.setPosition(-1.00);
+            }
 
             if (gamepadRateLimit.hasExpired() && gamepad1.a) {
                 imu.resetYaw();
@@ -83,8 +116,7 @@ public class SvenBackup extends LinearOpMode {
             }
 
             telemetry.addData("Active Drive Mode: ", driveMode);
-//            telemetry.addData("WristR Power: ", wristRight.getPower());
-//            telemetry.addData("WristL Power: ", wristLeft.getPower());
+            telemetry.addData("claw open close: ", clawOC.getPosition());
             telemetry.update();
         }
     }

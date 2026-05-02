@@ -11,6 +11,8 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.Range;
 
 @TeleOp
@@ -19,8 +21,8 @@ public class BigRockBackup extends LinearOpMode {
     private DcMotor flMotor, frMotor, blMotor, brMotor;
     private IMU imu;
 
-//    private CRServo wristLeft, wristRight;
-//    private Servo claw;
+    private CRServo wristLeft, wristRight;
+    private Servo claw;
 
     private DcMotor armMotor;
     private DcMotor armRotation;
@@ -46,10 +48,10 @@ public class BigRockBackup extends LinearOpMode {
         ));
         imu.initialize(parameters);
 
-//        wristLeft = hardwareMap.get(CRServo.class, "wristLeft");
-//        wristRight = hardwareMap.get(CRServo.class, "wristRight");
-//
-//        claw = hardwareMap.get(Servo.class, "claw");
+        wristLeft = hardwareMap.get(CRServo.class, "wristLeft");
+        wristRight = hardwareMap.get(CRServo.class, "wristRight");
+
+        claw = hardwareMap.get(Servo.class, "claw");
 
         armMotor = hardwareMap.get(DcMotor.class, "ArmMotor");
         armRotation = hardwareMap.get(DcMotor.class, "ArmRotation");
@@ -64,7 +66,6 @@ public class BigRockBackup extends LinearOpMode {
         armRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armRotation.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
 
         double[] powers;
 
@@ -97,8 +98,8 @@ public class BigRockBackup extends LinearOpMode {
             blMotor.setPower(powers[2]);
             brMotor.setPower(powers[3]);
 
-//            wristRight.setPower(wristRightPower);
-//            wristLeft.setPower(wristLeftPower);
+            wristRight.setPower(wristRightPower);
+            wristLeft.setPower(wristLeftPower);
 
             if (armUp) {
                 armMotor.setPower(0.40);
@@ -126,11 +127,11 @@ public class BigRockBackup extends LinearOpMode {
                 armRotation.setTargetPosition(armRotationPosition);
             }
 
-//            if (gamepad1.a) {
-//                claw.setPosition(1.00);
-//            } else if (gamepad1.b) {
-//                claw.setPosition(-1.00);
-//            }
+            if (gamepad1.a) {
+                claw.setPosition(1.00);
+            } else if (gamepad1.b) {
+                claw.setPosition(-1.00);
+            }
 
             if (gamepadRateLimit.hasExpired() && gamepad1.a) {
                 imu.resetYaw();
@@ -140,8 +141,8 @@ public class BigRockBackup extends LinearOpMode {
             }
 
             telemetry.addData("Active Drive Mode: ", driveMode);
-//            telemetry.addData("WristR Power: ", wristRight.getPower());
-//            telemetry.addData("WristL Power: ", wristLeft.getPower());
+            telemetry.addData("WristR Power: ", wristRight.getPower());
+            telemetry.addData("WristL Power: ", wristLeft.getPower());
             telemetry.update();
         }
     }
